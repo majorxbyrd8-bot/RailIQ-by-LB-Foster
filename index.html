@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RailIQ | Rail Network Control Tower</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2.25rem, 1.4rem + 3vw, 4.25rem);
+
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem;
+      --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem; --space-20: 5rem; --space-24: 6rem;
+
+      --color-bg: #f4f2ee;
+      --color-surface: #fbfaf7;
+      --color-surface-2: #f0ede7;
+      --color-surface-offset: #e8e4dc;
+      --color-border: #d8d2c8;
+      --color-divider: #e0dbd2;
+      --color-text: #1e2226;
+      --color-text-muted: #636b71;
+      --color-text-faint: #92979c;
+      --color-text-inverse: #f8f9fb;
+      --color-primary: #0e5c61;
+      --color-primary-hover: #084247;
+      --color-primary-highlight: #d3e2e2;
+      --color-secondary: #8c3a2d;
+      --color-success: #3f7c31;
+      --color-warning: #ab6e19;
+      --color-error: #a43757;
+      --color-gold-soft: #f7edab;
+
+      --radius-sm: 0.5rem; --radius-md: 0.875rem; --radius-lg: 1.25rem; --radius-xl: 1.75rem; --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 2px rgba(14,18,21,.05);
+      --shadow-md: 0 14px 34px rgba(14,18,21,.08);
+      --shadow-lg: 0 20px 60px rgba(14,18,21,.12);
+
+      --font-body: 'General Sans', 'Inter', sans-serif;
+      --font-display: 'Cabinet Grotesk', 'Inter', sans-serif;
+
+      --content: 1160px;
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #121516;
+      --color-surface: #1a1d1f;
+      --color-surface-2: #23282a;
+      --color-surface-offset: #2a3033;
+      --color-border: #363d40;
+      --color-divider: #2c3235;
+      --color-text: #eef1f2;
+      --color-text-muted: #b5bcc0;
+      --color-text-faint: #828a8f;
+      --color-text-inverse: #121516;
+      --color-primary: #64a8b2;
+      --color-primary-hover: #8cc0c8;
+      --color-primary-highlight: #223136;
+      --color-secondary: #cf7a66;
+      --color-gold-soft: #4b4526;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.25);
+      --shadow-md: 0 14px 34px rgba(0,0,0,.32);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,.42);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: linear-gradient(180deg, var(--color-bg) 0%, color-mix(in srgb, var(--color-bg) 86%, #dde8e4 14%) 100%);
+    }
+    img, svg { display: block; max-width: 100%; height: auto; }
+    button, a, input, select, textarea { font: inherit; }
+    button { cursor: pointer; border: 0; background: none; }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+
+    .skip-link {
+      position: absolute; left: 1rem; top: -3rem;
+      background: var(--color-primary); color: var(--color-text-inverse);
+      padding: .75rem 1rem; border-radius: var(--radius-sm); z-index: 100;
+    }
+    .skip-link:focus { top: 1rem; }
+
+    .container { width: min(calc(100% - 2rem), var(--content)); margin-inline: auto; }
+
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(14px);
+      background: color-mix(in srgb, var(--color-surface) 84%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .brand { display: flex; align-items: center; gap: .85rem; }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 14px;
+      display: grid; place-items: center; color: white;
+      background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 65%, white 35%));
+      box-shadow: var(--shadow-sm);
+    }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand-copy strong { display: block; font-family: var(--font-display); font-size: 1.05rem; }
+    .brand-copy span { display: block; font-size: var(--text-xs); color: var(--color-text-muted); letter-spacing: .04em; text-transform: uppercase; }
+
+    .nav-links { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .nav-links a { color: var(--color-text-muted); font-size: var(--text-sm); }
+    .nav-links a:hover { color: var(--color-text); }
+
+    .header-actions { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+
+    .btn, .theme-toggle {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .78rem 1rem; border-radius: var(--radius-full);
+      transition: transform var(--transition), background var(--transition), color var(--transition), border-color var(--transition);
+    }
+    .btn-primary { background: var(--color-primary); color: var(--color-text-inverse); }
+    .btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); }
+    .btn-secondary, .theme-toggle {
+      background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 9%, transparent); color: var(--color-text);
+    }
+
+    section { padding: clamp(var(--space-10), 8vw, var(--space-24)) 0; }
+    .hero { padding-top: clamp(var(--space-10), 7vw, var(--space-20)); }
+
+    .hero-grid { display: grid; grid-template-columns: 1.2fr .9fr; gap: var(--space-8); align-items: center; }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .45rem .75rem; border-radius: var(--radius-full);
+      background: var(--color-primary-highlight); color: var(--color-primary);
+      font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
+    }
+
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.02; letter-spacing: -.04em; }
+    h1 { font-size: var(--text-2xl); max-width: 12ch; margin: 1rem 0 1.25rem; }
+
+    .hero-copy p { max-width: 60ch; color: var(--color-text-muted); margin-bottom: 1.5rem; }
+
+    .hero-actions, .chip-row, .proof-row { display: flex; flex-wrap: wrap; gap: .85rem; }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .55rem .8rem; border-radius: var(--radius-full);
+      background: color-mix(in srgb, var(--color-surface) 84%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+      color: var(--color-text-muted); font-size: var(--text-sm);
+    }
+
+    .hero-panel, .card {
+      background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    }
+
+    .hero-panel { padding: var(--space-6); position: relative; overflow: hidden; }
+    .hero-panel::after {
+      content: ''; position: absolute; width: 280px; height: 280px; right: -70px; top: -60px; border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+    .panel-title strong { font-size: 1rem; }
+
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: .28rem .56rem; border-radius: var(--radius-full);
+      background: var(--color-primary-highlight); color: var(--color-primary);
+      font-size: .78rem; font-weight: 700;
+    }
+
+    .signal-stack { display: grid; gap: .85rem; }
+
+    .signal {
+      display: grid; grid-template-columns: 1fr auto; gap: .9rem;
+      padding: 1rem; border-radius: var(--radius-lg);
+      background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+    }
+    .signal strong { display: block; margin-bottom: .15rem; font-size: .98rem; }
+    .signal p { color: var(--color-text-muted); font-size: var(--text-sm); }
+
+    .state {
+      display: inline-flex; align-items: center; height: fit-content;
+      padding: .3rem .56rem; border-radius: var(--radius-full); font-size: .75rem; font-weight: 700;
+    }
+    .warning { background: color-mix(in srgb, var(--color-warning) 18%, transparent); color: var(--color-warning); }
+    .critical { background: color-mix(in srgb, var(--color-error) 17%, transparent); color: var(--color-error); }
+    .healthy { background: color-mix(in srgb, var(--color-success) 16%, transparent); color: var(--color-success); }
+
+    .section-head {
+      display: flex; justify-content: space-between; align-items: end;
+      gap: 1rem; margin-bottom: 1.25rem;
+    }
+    .section-head h2 { font-size: clamp(1.7rem, 1.2rem + 1.3vw, 2.6rem); }
+    .section-head p { max-width: 54ch; color: var(--color-text-muted); }
+
+    .kpi-grid, .feature-grid, .proof-grid, .journey-grid, .benefit-grid, .footer-grid, .pricing-grid {
+      display: grid; gap: 1rem;
+    }
+    .kpi-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .feature-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .proof-grid, .pricing-grid { grid-template-columns: 1.2fr .9fr; }
+    .journey-grid, .benefit-grid, .footer-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+
+    .card { padding: 1.25rem; }
+
+    .metric { display: grid; gap: .85rem; }
+    .metric span { color: var(--color-text-muted); font-size: var(--text-sm); }
+    .metric strong { font-family: var(--font-display); font-size: 2rem; line-height: 1; }
+
+    .bars { display: flex; align-items: end; gap: 6px; height: 56px; }
+    .bars i {
+      display: block; flex: 1;
+      border-radius: 999px 999px 2px 2px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 40%, white 60%), var(--color-primary));
+    }
+
+    .feature-card h3, .journey-card h3, .benefit-card h3, .proof-card h3 { font-size: 1.08rem; margin-bottom: .6rem; letter-spacing: -.02em; }
+    .feature-card p, .journey-card p, .benefit-card p, .proof-card p, .proof-card li { color: var(--color-text-muted); }
+
+    .feature-card ul, .proof-card ul {
+      display: grid; gap: .7rem; margin-top: 1rem; padding-left: 1rem;
+    }
+
+    .story-band {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-surface) 90%), color-mix(in srgb, var(--color-secondary) 10%, var(--color-surface) 90%));
+      border-top: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+    }
+
+    .story-grid { display: grid; grid-template-columns: .95fr 1.05fr; gap: 1rem; }
+    .story-steps { display: grid; gap: .8rem; }
+
+    .step {
+      display: grid; grid-template-columns: auto 1fr; gap: .85rem;
+      padding: 1rem; border-radius: var(--radius-lg);
+      background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+    .step b {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--color-primary-highlight); color: var(--color-primary); font-size: .82rem;
+    }
+
+    .timeline { display: grid; gap: .9rem; }
+    .timeline-item {
+      padding: 1rem; border-radius: var(--radius-lg);
+      background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+    }
+    .timeline-item strong { display: block; margin-bottom: .25rem; }
+    .timeline-item span {
+      color: var(--color-text-faint); font-size: var(--text-xs);
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+
+    .demo-box { display: grid; gap: 1rem; }
+    .demo-controls { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .9rem; }
+
+    label { display: grid; gap: .45rem; color: var(--color-text-muted); font-size: var(--text-sm); }
+
+    select, input, textarea {
+      width: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      background: var(--color-surface); color: var(--color-text);
+      padding: .85rem .95rem; outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent);
+    }
+
+    .result-box {
+      padding: 1rem; border-radius: var(--radius-lg);
+      background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+
+    .cta-card {
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      text-align: left;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 65%, #0d1d1f 35%));
+      color: var(--color-text-inverse); box-shadow: var(--shadow-lg);
+    }
+    .cta-card p {
+      max-width: 58ch;
+      color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
+      margin: .85rem 0 1.25rem;
+    }
+
+    .small-note { color: var(--color-text-faint); font-size: .82rem; }
+
+    footer { padding: 0 0 3rem; }
+    .footer-grid {
+      grid-template-columns: 1fr auto; align-items: center;
+      gap: 1rem; color: var(--color-text-muted); font-size: var(--text-sm);
+    }
+
+    /* Pricing section */
+    .pricing-grid { grid-template-columns: 1.2fr .9fr; }
+    .pricing-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .85rem; margin-bottom: 1.25rem; }
+    .pricing-tile {
+      padding: .9rem 1rem; border-radius: var(--radius-lg);
+      background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+    .pricing-tile span { display: block; font-size: var(--text-xs); color: var(--color-text-faint); text-transform: uppercase; letter-spacing: .09em; margin-bottom: .35rem; }
+    .pricing-tile strong { font-family: var(--font-display); font-size: 1.25rem; }
+
+    table { width: 100%; border-collapse: collapse; }
+    .pricing-table-wrap {
+      overflow: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+      margin-top: .75rem;
+    }
+    th, td {
+      padding: .82rem .9rem;
+      text-align: left;
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+      white-space: nowrap;
+    }
+    th {
+      background: color-mix(in srgb, var(--color-primary) 94%, white 6%);
+      color: white; font-size: var(--text-sm);
+    }
+    td { background: color-mix(in srgb, var(--color-surface) 94%, transparent); }
+    tr:last-child td { border-bottom: 0; }
+    td.highlight {
+      background: linear-gradient(180deg,
+        color-mix(in srgb, var(--color-gold-soft) 86%, var(--color-surface) 14%),
+        color-mix(in srgb, var(--color-gold-soft) 78%, var(--color-surface) 22%)
+      );
+      font-weight: 600;
+    }
+
+    .assumption-panel {
+      margin-top: 1.25rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+      background: var(--color-surface-2);
+      overflow: hidden;
+    }
+    .assumption-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .9rem 1rem; cursor: pointer;
+    }
+    .assumption-header span { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .assumption-header button {
+      border-radius: var(--radius-full); padding: .3rem .7rem;
+      background: var(--color-surface-offset); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      font-size: .8rem;
+    }
+    .assumption-body { padding: .85rem 1rem 1rem; border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); display: none; }
+    .assumption-list {
+      display: grid; gap: .55rem;
+    }
+    .assumption-row {
+      display: grid; grid-template-columns: 1fr auto; gap: .9rem;
+      padding: .6rem .75rem;
+      border-radius: var(--radius-md);
+      background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+      font-size: var(--text-sm);
+    }
+    .assumption-row span { color: var(--color-text-muted); }
+    .assumption-row strong { color: var(--color-primary); }
+
+    @media (max-width: 980px) {
+      .hero-grid, .proof-grid, .story-grid, .kpi-grid, .feature-grid,
+      .journey-grid, .benefit-grid, .footer-grid, .pricing-grid { grid-template-columns: 1fr; }
+      .pricing-tiles { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      .header-inner, .section-head { align-items: start; flex-direction: column; }
+      .header-actions { width: 100%; flex-wrap: wrap; }
+      .hero-grid { grid-template-columns: 1fr; }
+      .pricing-tiles { grid-template-columns: 1fr; }
+      .demo-controls { grid-template-columns: 1fr; }
+      th, td { padding: .72rem .7rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#top" class="brand" aria-label="RailIQ home">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 17c4.5-7.2 11.4-10.8 16-12"></path>
+            <path d="M4 12h10"></path>
+            <path d="M8 20h9"></path>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <strong>RailIQ</strong>
+          <span>by L.B. Foster</span>
+        </div>
+      </a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#problem">Challenge</a>
+        <a href="#platform">Platform</a>
+        <a href="#workflow">How it works</a>
+        <a href="#demo">Live example</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">Dark mode</button>
+        <a class="btn btn-primary" href="#pricing">Talk pricing</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Rail network control tower</span>
+          <h1>Turn rail monitoring data into clear, prioritized actions.</h1>
+          <p>RailIQ brings your monitoring and maintenance data into one cloud platform. It highlights where your network is at risk, what to address first, and whether issues can be resolved remotely or require a field crew.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#platform">Explore the platform</a>
+            <a class="btn btn-secondary" href="#demo">View live example</a>
+          </div>
+          <div class="chip-row" style="margin-top: 1rem;">
+            <div class="chip">Unified rail intelligence</div>
+            <div class="chip">Predictive maintenance</div>
+            <div class="chip">Remote diagnostics</div>
+            <div class="chip">Integrated field data</div>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="Live signal highlights">
+          <div class="panel-title">
+            <strong>Sample network snapshot</strong>
+            <span class="badge">Live sites</span>
+          </div>
+          <div class="signal-stack">
+            <article class="signal">
+              <div>
+                <strong>Mountain corridor – hillside section</strong>
+                <p>Obstruction risk elevated after repeated detections near the right‑of‑way.</p>
+              </div>
+              <span class="state warning">Review</span>
+            </article>
+            <article class="signal">
+              <div>
+                <strong>River crossing – sensor array B</strong>
+                <p>Water level trend rising; threshold reached with photo confirmation available.</p>
+              </div>
+              <span class="state warning">Warning</span>
+            </article>
+            <article class="signal">
+              <div>
+                <strong>Transit loop – site 04</strong>
+                <p>Repeated high wheel‑impact readings suggest a targeted maintenance opportunity.</p>
+              </div>
+              <span class="state critical">Priority</span>
+            </article>
+            <article class="signal">
+              <div>
+                <strong>High‑curvature curve – lubricator 12</strong>
+                <p>Asset stable with refill forecast and application rate within range.</p>
+              </div>
+              <span class="state healthy">Healthy</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- PROBLEM -->
+    <section id="problem">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>The challenge rail operators face</h2>
+            <p>Rail networks generate alarms from many different systems, but those alerts often sit in separate tools and teams. Control rooms, maintenance planners, and engineering groups see parts of the picture, yet it is hard to agree on priorities or schedule work efficiently.</p>
+          </div>
+          <span class="badge">Fragmented view</span>
+        </div>
+        <div class="kpi-grid">
+          <article class="card metric">
+            <span>Data sources unified</span>
+            <strong>4</strong>
+            <div class="bars"><i style="height:40%"></i><i style="height:48%"></i><i style="height:66%"></i><i style="height:82%"></i></div>
+          </article>
+          <article class="card metric">
+            <span>Sites connected</span>
+            <strong>17</strong>
+            <div class="bars"><i style="height:22%"></i><i style="height:38%"></i><i style="height:62%"></i><i style="height:88%"></i></div>
+          </article>
+          <article class="card metric">
+            <span>Events diagnosable remotely</span>
+            <strong>84%</strong>
+            <div class="bars"><i style="height:45%"></i><i style="height:50%"></i><i style="height:72%"></i><i style="height:90%"></i></div>
+          </article>
+          <article class="card metric">
+            <span>Reduction in unplanned visits</span>
+            <strong>27%</strong>
+            <div class="bars"><i style="height:65%"></i><i style="height:58%"></i><i style="height:46%"></i><i style="height:33%"></i></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATFORM -->
+    <section id="platform">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>How RailIQ brings data together</h2>
+            <p>RailIQ connects safety monitoring, asset condition data, and maintenance information into one operating view. It is designed so control rooms and field teams can work from the same set of facts.</p>
+          </div>
+          <span class="badge">Single view</span>
+        </div>
+        <div class="feature-grid">
+          <article class="card feature-card">
+            <h3>Network monitoring</h3>
+            <p>Ingests events from existing monitoring systems and maps them to locations, lines, and routes across your network.</p>
+            <ul>
+              <li>Site‑level status for key locations</li>
+              <li>Context on weather and operating conditions</li>
+              <li>History of recent events for each asset</li>
+            </ul>
+          </article>
+          <article class="card feature-card">
+            <h3>Asset health</h3>
+            <p>Tracks the status and service needs of critical wayside and onboard equipment, including friction‑management assets.</p>
+            <ul>
+              <li>Uptime and fault history</li>
+              <li>Refill and service forecasts</li>
+              <li>Service history by location and route</li>
+            </ul>
+          </article>
+          <article class="card feature-card">
+            <h3>Decision engine</h3>
+            <p>Applies rules and analytics to score risk, group related events, and generate clear recommendations for next actions.</p>
+            <ul>
+              <li>Risk scoring for each event</li>
+              <li>Automatic grouping by corridor</li>
+              <li>Suggested actions for operations teams</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKFLOW -->
+    <section class="story-band" id="workflow">
+      <div class="container story-grid">
+        <div>
+          <div class="section-head" style="margin-bottom: 1rem;">
+            <div>
+              <h2>How RailIQ fits into daily operations</h2>
+              <p>The platform follows a simple sequence from data collection to field work, so teams can move from alarms to coordinated action quickly.</p>
+            </div>
+          </div>
+          <div class="story-steps">
+            <article class="step"><b>01</b><div><strong>Collect</strong><p>RailIQ continuously ingests alerts and asset data from connected systems.</p></div></article>
+            <article class="step"><b>02</b><div><strong>Prioritize</strong><p>Events are scored by risk and impact, then grouped by corridor or site.</p></div></article>
+            <article class="step"><b>03</b><div><strong>Diagnose</strong><p>Operations teams review high‑priority items first and use remote checks where possible.</p></div></article>
+            <article class="step"><b>04</b><div><strong>Dispatch & plan</strong><p>Confirmed issues become targeted work orders, helping planners bundle jobs and reduce urgent call‑outs.</p></div></article>
+          </div>
+        </div>
+        <div class="card proof-card">
+          <h3>Example workflow</h3>
+          <div class="timeline">
+            <article class="timeline-item"><span>Alert</span><strong>Repeated high‑impact readings at a site</strong><p>RailIQ correlates readings with site health and train patterns.</p></article>
+            <article class="timeline-item"><span>Review</span><strong>Remote check before dispatch</strong><p>Operations verify diagnostics and confirm the need for on‑site work.</p></article>
+            <article class="timeline-item"><span>Action</span><strong>Bundled route for field crews</strong><p>Maintenance visits are combined with nearby inspections to maximize each trip.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUE -->
+    <section id="value">
+      <div class="container proof-grid">
+        <article class="card proof-card">
+          <div class="section-head" style="margin-bottom: 1rem;">
+            <div>
+              <h2>What RailIQ helps you achieve</h2>
+              <p>The focus is practical: fewer surprises, more planned work, and a clearer picture of where to deploy crews.</p>
+            </div>
+          </div>
+          <ul>
+            <li>Reduce unnecessary truck rolls by resolving more events remotely.</li>
+            <li>Identify issues earlier, when they are faster and less costly to address.</li>
+            <li>Lower the likelihood and impact of major incidents on key routes.</li>
+          </ul>
+          <div class="proof-row" style="margin-top: 1rem;">
+            <div class="chip">Safer operations</div>
+            <div class="chip">More efficient maintenance</div>
+            <div class="chip">Shared situational awareness</div>
+          </div>
+        </article>
+        <article class="card proof-card">
+          <h3>Operational benefits</h3>
+          <div class="timeline" style="margin-top: 1rem;">
+            <article class="timeline-item"><span>Shared view</span><strong>Align operations and maintenance</strong><p>Teams work from the same picture of risk and asset health.</p></article>
+            <article class="timeline-item"><span>Planning</span><strong>Plan by corridor, not by single alarm</strong><p>RailIQ groups work so crews can address multiple needs in one trip.</p></article>
+            <article class="timeline-item"><span>Insight</span><strong>Learn from patterns</strong><p>Trends in events and asset performance help shape longer‑term investment decisions.</p></article>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- DEMO -->
+    <section id="demo">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Live example: from event to action</h2>
+            <p>This simplified example shows how RailIQ converts an event into a recommended next step—watch, investigate remotely, or schedule maintenance.</p>
+          </div>
+          <button class="btn btn-secondary" type="button" id="autofillBtn">Load demo scenario</button>
+        </div>
+        <div class="journey-grid">
+          <article class="card demo-box">
+            <h3>Enter a scenario</h3>
+            <div class="demo-controls">
+              <label>Asset category
+                <select id="assetType">
+                  <option>Track condition event</option>
+                  <option>Environmental risk event</option>
+                  <option>Equipment health alert</option>
+                  <option>Lubrication performance alert</option>
+                </select>
+              </label>
+              <label>Location
+                <input id="siteName" value="Corridor East – Site 04" />
+              </label>
+              <label>Severity
+                <select id="severity">
+                  <option>Low</option>
+                  <option selected>Medium</option>
+                  <option>High</option>
+                  <option>Critical</option>
+                </select>
+              </label>
+              <label>Confidence score
+                <input id="confidence" type="number" min="0" max="100" value="78" />
+              </label>
+            </div>
+            <label>Observed condition
+              <textarea id="condition">Elevated readings over multiple passes, with stable diagnostics and no recent work orders at this site.</textarea>
+            </label>
+            <div class="hero-actions">
+              <button class="btn btn-primary" type="button" id="simulateBtn">Generate recommendation</button>
+              <button class="btn btn-secondary" type="button" id="resetBtn">Reset</button>
+            </div>
+          </article>
+          <article class="card">
+            <h3>RailIQ recommendation</h3>
+            <div class="result-box">
+              <div class="panel-title" style="margin-bottom: .75rem;">
+                <strong>Next best action</strong>
+                <span class="badge" id="resultBadge">Ready</span>
+              </div>
+              <p id="resultText">RailIQ will turn your selected scenario into a recommended next step, based on asset type, severity, and confidence level.</p>
+            </div>
+            <p class="small-note" style="margin-top: 1rem;">This is a simplified illustration of how RailIQ guides day‑to‑day decisions for operations and maintenance teams.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section id="pricing">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Pricing designed around your network</h2>
+            <p>RailIQ is offered as an annual subscription based on the size of your network, with a one‑time implementation fee when the platform is deployed on your routes.</p>
+          </div>
+          <span class="badge">Simple model</span>
+        </div>
+
+        <!-- High-level tiles -->
+        <div class="pricing-tiles">
+          <div class="pricing-tile">
+            <span>Class I subscription</span>
+            <strong>$1,500 / mile / year</strong>
+          </div>
+          <div class="pricing-tile">
+            <span>Lite tier subscription</span>
+            <strong>$250 / mile / year</strong>
+          </div>
+          <div class="pricing-tile">
+            <span>Implementation fees</span>
+            <strong>$3k–$8k / mile</strong>
+          </div>
+          <div class="pricing-tile">
+            <span>Base efficiency assumption</span>
+            <strong>10% maintenance gain</strong>
+          </div>
+        </div>
+
+        <div class="pricing-grid">
+          <!-- Summary table + bullets -->
+          <article class="card">
+            <h3>Commercial tiers</h3>
+            <p class="small-note" style="margin-top:.25rem;">Numbers shown here are illustrative and based on a RailIQ pricing model. They can be adjusted for individual networks.</p>
+            <div class="pricing-table-wrap" style="margin-top:.75rem;">
+              <table aria-label="RailIQ pricing tiers">
+                <thead>
+                  <tr>
+                    <th>Tier</th>
+                    <th>Subscription</th>
+                    <th>Implementation</th>
+                    <th>Best suited for</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Class I networks</td>
+                    <td class="highlight">$1,500 / mile / year</td>
+                    <td>$3,000–$8,000 / mile</td>
+                    <td>Large networks seeking full‑route coverage and analytics</td>
+                  </tr>
+                  <tr>
+                    <td>Lite tier (Class II / III)</td>
+                    <td class="highlight">$250 / mile / year</td>
+                    <td>Scaled to number of monitored sites</td>
+                    <td>Regional and short‑line operators</td>
+                  </tr>
+                  <tr>
+                    <td>Implementation levels</td>
+                    <td>Standard platform subscription</td>
+                    <td class="highlight">Low: $3k | Mid: $5k | High: $8k per mile</td>
+                    <td>Pilots, corridor roll‑outs, and full network deployments</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="feature-list">
+              <li>Per‑mile pricing links subscription costs directly to network size.</li>
+              <li>Lite tier makes the model accessible for smaller operators while preserving enterprise economics for Class I networks.</li>
+              <li>Implementation levels reflect the number of sites, integrations, and field work required.</li>
+            </ul>
+          </article>
+
+          <!-- Assumptions panel -->
+          <aside class="card">
+            <h3>How customers justify the investment</h3>
+            <ul class="feature-list">
+              <li>Fewer emergency call‑outs and truck rolls as more events are resolved remotely.</li>
+              <li>More work moved from unplanned to planned windows, lowering disruption.</li>
+              <li>Reduced probability and impact of major incidents on key corridors.</li>
+            </ul>
+
+            <div class="assumption-panel" style="margin-top:1.25rem;">
+              <div class="assumption-header">
+                <span>Illustrative assumptions used in modeling</span>
+                <button type="button" id="toggleAssumptions">Show</button>
+              </div>
+              <div class="assumption-body" id="assumptionBody">
+                <div class="assumption-list">
+                  <div class="assumption-row"><span>Class I subscription (per mile / year)</span><strong>$1,500</strong></div>
+                  <div class="assumption-row"><span>Lite subscription (per mile / year)</span><strong>$250</strong></div>
+                  <div class="assumption-row"><span>Implementation fee – low</span><strong>$3,000 / mile</strong></div>
+                  <div class="assumption-row"><span>Implementation fee – mid</span><strong>$5,000 / mile</strong></div>
+                  <div class="assumption-row"><span>Implementation fee – high</span><strong>$8,000 / mile</strong></div>
+                  <div class="assumption-row"><span>Typical maintenance efficiency improvement</span><strong>5–10%</strong></div>
+                  <div class="assumption-row"><span>Share of events diagnosable remotely</span><strong>70–85%</strong></div>
+                  <div class="assumption-row"><span>Value of one major incident avoided</span><strong>≈ $20,000,000</strong></div>
+                </div>
+                <p class="small-note" style="margin-top:.75rem;">RailIQ pricing is intended to be covered by improvements in maintenance efficiency and reduced disruption, rather than creating a new standalone cost line.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section>
+      <div class="container">
+        <div class="cta-card">
+          <span class="eyebrow" style="background: rgba(255,255,255,.16); color: white;">RailIQ in one sentence</span>
+          <h2 style="font-size: clamp(1.8rem, 1.2rem + 1.7vw, 3rem); max-width: 14ch; margin-top: .9rem;">
+            Give your teams one place to see what matters next.
+          </h2>
+          <p>RailIQ turns rail monitoring and maintenance data into a clear, prioritized action list, helping you run a safer, more efficient network with less guesswork.</p>
+          <a class="btn btn-secondary" href="#top" style="background: rgba(255,255,255,.14); color: white; border-color: rgba(255,255,255,.22);">Back to top</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>RailIQ by L.B. Foster – customer concept for a unified rail intelligence platform.</div>
+      <div class="small-note">Responsive layout for desktop and mobile.</div>
+    </div>
+  </footer>
+
+  <script>
+    const root = document.documentElement;
+    const themeButton = document.querySelector('[data-theme-toggle]');
+    let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    root.setAttribute('data-theme', theme);
+    const syncTheme = () => themeButton.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+    syncTheme();
+    themeButton.addEventListener('click', () => {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', theme);
+      syncTheme();
+    });
+
+    const assetType = document.getElementById('assetType');
+    const siteName = document.getElementById('siteName');
+    const severity = document.getElementById('severity');
+    const confidence = document.getElementById('confidence');
+    const condition = document.getElementById('condition');
+    const resultText = document.getElementById('resultText');
+    const resultBadge = document.getElementById('resultBadge');
+
+    function buildRecommendation() {
+      const asset = assetType.value;
+      const sev = severity.value;
+      const conf = Number(confidence.value || 0);
+      const site = siteName.value || 'Selected site';
+      const note = condition.value.trim() || 'Condition details pending.';
+      let badge = 'Review';
+      let action = 'Monitor the location and include in the next routine review.';
+
+      if (asset.includes('Environmental')) {
+        action = conf >= 80 || sev === 'Critical'
+          ? 'Issue an operations alert, verify local conditions, and prepare temporary restrictions if levels continue rising.'
+          : 'Keep under watch and compare the trend with recent events before dispatching a crew.';
+        badge = conf >= 80 || sev === 'Critical' ? 'Priority environment' : 'Environmental watch';
+      } else if (asset.includes('Track condition')) {
+        action = sev === 'High' || sev === 'Critical'
+          ? 'Schedule a targeted inspection on the next available window and prepare a temporary speed restriction if needed.'
+          : 'Flag for closer observation and review trend data over the next 24 hours.';
+        badge = sev === 'High' || sev === 'Critical' ? 'Track review' : 'Monitor';
+      } else if (asset.includes('Equipment')) {
+        action = conf >= 75
+          ? 'Run remote diagnostics and, if confirmed, create a work order for the specific asset and location.'
+          : 'Continue monitoring and compare with historical performance before opening a work order.';
+        badge = conf >= 75 ? 'Equipment priority' : 'Observe';
+      } else {
+        action = sev === 'High' || sev === 'Critical'
+          ? 'Combine a lubrication performance check with nearby inspections on the next planned route.'
+          : 'Leave in the planned maintenance queue and compare usage with expected levels.';
+        badge = 'Service plan';
+      }
+
+      resultBadge.textContent = badge;
+      resultText.textContent = `${site}: ${note} Recommended action: ${action}`;
+    }
+
+    document.getElementById('simulateBtn').addEventListener('click', buildRecommendation);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      assetType.value = 'Track condition event';
+      siteName.value = 'Corridor East – Site 04';
+      severity.value = 'Medium';
+      confidence.value = 78;
+      condition.value = 'Elevated readings over multiple passes, with stable diagnostics and no recent work orders at this site.';
+      resultBadge.textContent = 'Ready';
+      resultText.textContent = 'RailIQ will turn your selected scenario into a recommended next step, based on asset type, severity, and confidence level.';
+    });
+    document.getElementById('autofillBtn').addEventListener('click', () => {
+      assetType.value = 'Environmental risk event';
+      siteName.value = 'River crossing – sensor array B';
+      severity.value = 'High';
+      confidence.value = 88;
+      condition.value = 'Threshold reached with rising trend and camera confirmation available.';
+      buildRecommendation();
+      document.getElementById('demo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    const toggleBtn = document.getElementById('toggleAssumptions');
+    const assumptionBody = document.getElementById('assumptionBody');
+    toggleBtn.addEventListener('click', () => {
+      const open = assumptionBody.style.display === 'block';
+      assumptionBody.style.display = open ? 'none' : 'block';
+      toggleBtn.textContent = open ? 'Show' : 'Hide';
+    });
+  </script>
+</body>
+</html>
